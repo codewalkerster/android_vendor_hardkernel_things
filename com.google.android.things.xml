@@ -1,0 +1,13 @@
+<?xml version="1.00" encoding="utf-8"?>
+
+<permissions>
+    <permission name="com.google.android.things.permission.USE_PERIPHERAL_IO" >
+    </permission>
+    <permission name ="com.google.android.things.permission.MANAGE_INPUT_DRIVERS" >
+    </permission>
+    <permission name ="com.google.android.things.permission.MANAGE_SENSOR_DRIVERS" >
+    </permission>
+
+    <library name="com.google.android.things"
+        file="/vendor/framework/odroidThings.jar" />
+</permissions>
