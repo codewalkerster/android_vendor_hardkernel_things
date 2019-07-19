@@ -1,23 +1,19 @@
+#    Copyright (c) 2019 Sangchul Go <luke.go@hardkernel.com>
+#
+#    OdroidThings is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Lesser General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    OdroidThings is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Lesser General Public License for more details.
+#
+#    You should have received a copy of the GNU Lesser General Public License
+#    along with OdroidThings.  If not, see <http://www.gnu.org/licenses/>.
+
 LOCAL_PATH:= $(call my-dir)
-
-# the library
-#==============================================================
-include $(CLEAR_VARS)
-
-LOCAL_SRC_FILES := \
-    $(call all-subdir-java-files)
-
-LOCAL_MODULE := odroidThings
-LOCAL_MODULE_CLASS := JAVA_LIBRARIES
-LOCAL_DX_FLAGS := --core-library
-
-ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 26 && echo OK), OK)
-LOCAL_PROPRIETARY_MODULE := true
-endif
-
-LOCAL_JAVA_LIBRARIES := \
-
-include $(BUILD_JAVA_LIBRARY)
 
 #copy xml to permissions directory
 include $(CLEAR_VARS)
