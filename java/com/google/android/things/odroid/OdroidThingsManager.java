@@ -184,7 +184,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
 
     private int getPinNumBy(String name, InitCallback callback) {
         for (PinState pin:pinStateList) {
-            if (pin.name == name) {
+            if (pin.name.equals(name)) {
                 if (pin.pin == null) {
                     int idx = pinStateList.indexOf(pin);
                     pin.pin = callback.initPinBy(idx);
