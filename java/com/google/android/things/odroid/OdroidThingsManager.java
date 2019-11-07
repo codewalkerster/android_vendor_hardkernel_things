@@ -139,6 +139,18 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         instance.remove(pin);
     }
 
+    private List<String> getFilteredListOf(int mode) {
+        List<String> list = _getListOf(mode);
+
+        for(ThingsInstance instance: instanceList.values()) {
+            instance.occupiedPin.forEach(
+                    (pin) -> {
+                        if (list.contains(pin.toString())) list.remove(pin.toString());
+                    });
+        }
+        return list;
+    }
+
     class PinState {
         public Pin pin = null;
         public String name;
@@ -196,7 +208,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
     }
 
     public List<String> getGpioList() {
-        return _getListOf(PinMode.GPIO);
+        return getFilteredListOf(PinMode.GPIO);
     }
 
     public int getGpioPinBy(String name) {
@@ -256,7 +268,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
     }
 
     public List<String> getPwmList() {
-        return _getListOf(PinMode.PWM);
+        return getFilteredListOf(PinMode.PWM);
     }
 
     public int getPwmPinBy(String name) {
