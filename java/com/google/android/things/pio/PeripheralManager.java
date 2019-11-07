@@ -37,6 +37,7 @@ import android.os.Binder;
 
 import com.google.android.things.pio.IThingsManager;
 import com.google.android.things.pio.impl.GpioImpl;
+import com.google.android.things.pio.impl.PwmImpl;
 
 public final class PeripheralManager {
     private static final String TAG = "PeripheralManager";
@@ -86,6 +87,16 @@ public final class PeripheralManager {
         return gpioList;
     }
 
+    public List<String> getPwmList() {
+        List<String> pwmList = null;
+        try {
+            pwmList = mThingsManager.getPwmList();
+        } catch (RemoteException e) {
+            Log.d(TAG, "getPwmList is not implemented");
+        }
+        return pwmList;
+    }
+
     public Gpio openGpio(String name) throws IOException {
         Gpio gpio = null;
         try {
@@ -99,6 +110,20 @@ public final class PeripheralManager {
             throw new IOException("gpio(" + name +") is not opened");
 
         return gpio;
+    }
+
+    public Pwm openPwm(String name) throws IOException {
+        Pwm pwm = null;
+        try {
+            int pin = mThingsManager.getPwmPinBy(name);
+            pwm = new PwmImpl(name, pin, mThingsManager, thingsId);
+        } catch (RemoteException e) {
+            Log.d(TAG, "openPwm is not implemented");
+            return null;
+        }
+        if (pwm == null)
+            throw new IOException("pwm(" + name +") is not opened");
+        return pwm;
     }
 
     @Override
