@@ -60,7 +60,6 @@ public class OdroidGpio implements Pin {
     public void close() {
         if (remoteCallback != null) {
             mGpioNative.unregisterCallback(gpioState.pin);
-            remoteCallback = null;
         }
     }
 

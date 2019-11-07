@@ -122,7 +122,7 @@ public class GpioImpl implements Gpio,AutoCloseable {
     }
 
     public void setActiveType(int activeType) throws IllegalArgumentException, IOException {
-        if ((activeType != ACTIVE_LOW) ||
+        if ((activeType != ACTIVE_LOW) &&
             (activeType != ACTIVE_HIGH)) {
             throw new IllegalArgumentException("active Type should be LOW or HIGH");
         }

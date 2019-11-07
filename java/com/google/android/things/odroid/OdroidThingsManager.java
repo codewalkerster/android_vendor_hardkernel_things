@@ -105,7 +105,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         public void release() {
             Iterator pinIterator = occupiedPin.iterator();
             while (pinIterator.hasNext())
-                closeGpio((Integer)pinIterator.next());
+                closePinBy((Integer)pinIterator.next());
             occupiedPin.clear();
             occupiedPin = null;
 
@@ -142,7 +142,6 @@ public class OdroidThingsManager extends IThingsManager.Stub {
     class PinState {
         public Pin pin = null;
         public String name;
-        public int availableMode;
     }
 
     private static List<PinState> pinStateList;
@@ -151,14 +150,12 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         pinStateList = new ArrayList<PinState>();
 
         List<String> pinNames = _getPinName();
-        int[] availableList = _getPinAvailables();
 
         int size = pinNames.size();
         for (int i=0; i<size; i++) {
             PinState state = new PinState();
             state.pin = null;
             state.name = pinNames.get(i);
-            state.availableMode = availableList[i];
             pinStateList.add(state);
         }
     }
@@ -168,14 +165,6 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         initPinStateList();
 
         instanceList = new HashMap<>();
-    }
-
-    private List<String> getListOf(int mode) {
-        List<String> list = new ArrayList<>();
-        for(PinState pin: pinStateList)
-            if ((pin.availableMode&mode) == mode)
-                list.add(pin.name);
-        return list;
     }
 
     private interface InitCallback {
@@ -207,7 +196,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
     }
 
     public List<String> getGpioList() {
-        return getListOf(PinMode.GPIO);
+        return _getListOf(PinMode.GPIO);
     }
 
     public int getGpioPinBy(String name) {
@@ -266,7 +255,39 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         gpio.doCallback();
     }
 
+    public List<String> getPwmList() {
+        return _getListOf(PinMode.PWM);
+    }
+
+    public int getPwmPinBy(String name) {
+        return getPinNumBy(name, new InitCallback() {
+            @Override
+            public Pin initPinBy(int idx) {
+                return new OdroidPwm(idx);
+            }
+        });
+    }
+
+    public boolean closePwm(int idx) {
+        return closePinBy(idx);
+    }
+
+    public boolean setEnabled(int pin, boolean enabled) {
+        OdroidPwm pwm = (OdroidPwm)pinStateList.get(pin).pin;
+        return pwm.setEnabled(enabled);
+    }
+
+    public boolean setPwmDutyCycle(int pin, double duty_cycle) {
+        OdroidPwm pwm = (OdroidPwm)pinStateList.get(pin).pin;
+        return pwm.setDutyCycle(duty_cycle);
+    }
+
+    public boolean setPwmFrequencyHz(int pin, double frequency) {
+        OdroidPwm pwm = (OdroidPwm)pinStateList.get(pin).pin;
+        return pwm.setFrequencyHz(frequency);
+    }
+
     private native void _init();
+    private native ArrayList<String> _getListOf(int mode);
     private native ArrayList<String> _getPinName();
-    private native int[] _getPinAvailables();
 }

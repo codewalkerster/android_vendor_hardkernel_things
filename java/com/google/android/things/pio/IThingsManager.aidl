@@ -24,6 +24,7 @@ import android.os.IBinder;
  * @hide
  */
 interface IThingsManager {
+    /* gpio */
     List<String> getGpioList();
     int getGpioPinBy(String name);
 
@@ -42,4 +43,13 @@ interface IThingsManager {
 
     void registerGpioCallback(int pin, IGpioCallback callback);
     void unregisterGpioCallback(int pin, IGpioCallback callback);
+
+    /* pwm */
+    List<String> getPwmList();
+    int getPwmPinBy(String name);
+
+    boolean closePwm(int pin);
+    boolean setEnabled(int pin, boolean enabled);
+    boolean setPwmDutyCycle(int pin, double duty_cycle);
+    boolean setPwmFrequencyHz(int pin, double frequency);
 }
