@@ -84,10 +84,12 @@ public class OdroidThingsManager extends IThingsManager.Stub {
     // per Peripheral manager called values
     private class ThingsInstance {
         public Set<Integer> occupiedPin;
+        public Set<Integer> usedI2c;
         public WakeLock wakeLock;
 
         public ThingsInstance(int thingsId, IBinder listener) {
             occupiedPin = new HashSet<>();
+            usedI2c = new HashSet<>();
             wakeLock = new WakeLock(listener, thingsId);
             try {
                 listener.linkToDeath(wakeLock, 0);
@@ -102,12 +104,26 @@ public class OdroidThingsManager extends IThingsManager.Stub {
             occupiedPin.remove(pin);
         }
 
+        public void addI2c(int idx) {
+            usedI2c.add(idx);
+        }
+
+        public void removeI2c(int idx) {
+            usedI2c.remove(idx);
+        }
+
         public void release() {
             Iterator pinIterator = occupiedPin.iterator();
             while (pinIterator.hasNext())
                 closePinBy((Integer)pinIterator.next());
             occupiedPin.clear();
             occupiedPin = null;
+
+            Iterator i2cIterator = usedI2c.iterator();
+            while (i2cIterator.hasNext())
+                closeI2cBy((Integer)i2cIterator.next());
+            usedI2c.clear();
+            usedI2c = null;
 
             wakeLock = null;
         }
@@ -139,6 +155,16 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         instance.remove(pin);
     }
 
+    public void registerI2c(int idx, int thingsId) {
+        ThingsInstance instance = instanceList.get(thingsId);
+        instance.addI2c(idx);
+    }
+
+    public void unregisterI2c(int idx, int thingsId) {
+        ThingsInstance instance = instanceList.get(thingsId);
+        instance.removeI2c(idx);
+    }
+
     private List<String> getFilteredListOf(int mode) {
         List<String> list = _getListOf(mode);
 
@@ -156,10 +182,19 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         public String name;
     }
 
+    class I2cState extends PinState {
+        public int address;
+    }
+
     private static List<PinState> pinStateList;
+    private static Map<Integer, I2cState> i2cStateList;
+    private List<String> i2cList = null;
+    private static int i2cIdx = 0;
 
     private void initPinStateList() {
         pinStateList = new ArrayList<PinState>();
+        i2cStateList = new HashMap<>();
+        i2cList = _getListOf(PinMode.I2C);
 
         List<String> pinNames = _getPinName();
 
@@ -267,6 +302,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         gpio.doCallback();
     }
 
+    // pwm
     public List<String> getPwmList() {
         return getFilteredListOf(PinMode.PWM);
     }
@@ -297,6 +333,79 @@ public class OdroidThingsManager extends IThingsManager.Stub {
     public boolean setPwmFrequencyHz(int pin, double frequency) {
         OdroidPwm pwm = (OdroidPwm)pinStateList.get(pin).pin;
         return pwm.setFrequencyHz(frequency);
+    }
+
+    // i2c
+    public List<String> getI2cList() {
+        return i2cList;
+    }
+
+    public int getI2cIdxBy(String name, int address) {
+        I2cState state = new I2cState();
+        state.name = name;
+        state.address = address;
+        int listIdx = i2cList.indexOf(name);
+        int idx = i2cIdx++;
+        state.pin = new OdroidI2c(name, listIdx, address, idx);
+
+        i2cStateList.put(idx, state);
+        return idx;
+    }
+
+    private boolean closeI2cBy(int idx) {
+        I2cState i2c = i2cStateList.get(idx);
+        if (i2c == null)
+            return false;
+
+        i2c.pin.close();
+        i2c.pin = null;
+        i2c = null;
+        i2cStateList.remove(idx);
+        return true;
+    }
+
+    public boolean closeI2c(int idx) {
+        return closeI2cBy(idx);
+    }
+
+    public byte[] readI2c(int idx, int length) {
+        OdroidI2c i2c = (OdroidI2c)i2cStateList.get(idx).pin;
+        return i2c.read(length);
+    }
+
+    public byte[] readI2cRegBuffer(int idx, int reg, int length) {
+        OdroidI2c i2c = (OdroidI2c)i2cStateList.get(idx).pin;
+        return i2c.readRegBuffer(reg, length);
+    }
+
+    public byte readI2cRegByte(int idx, int reg) {
+        OdroidI2c i2c = (OdroidI2c)i2cStateList.get(idx).pin;
+        return i2c.readRegByte(reg);
+    }
+
+    public int readI2cRegWord(int idx, int reg) {
+        OdroidI2c i2c = (OdroidI2c)i2cStateList.get(idx).pin;
+        return (int)i2c.readRegWord(reg);
+    }
+
+    public boolean writeI2c(int idx, byte[] buffer, int length) {
+        OdroidI2c i2c = (OdroidI2c)i2cStateList.get(idx).pin;
+        return i2c.write(buffer, length);
+    }
+
+    public boolean writeI2cRegBuffer(int idx, int reg, byte[] buffer, int length) {
+        OdroidI2c i2c = (OdroidI2c)i2cStateList.get(idx).pin;
+        return i2c.writeRegBuffer(reg, buffer, length);
+    }
+
+    public boolean writeI2cRegByte(int idx, int reg, byte data) {
+        OdroidI2c i2c = (OdroidI2c)i2cStateList.get(idx).pin;
+        return i2c.writeRegByte(reg, data);
+    }
+
+    public boolean writeI2cRegWord(int idx, int reg, int data) {
+        OdroidI2c i2c = (OdroidI2c)i2cStateList.get(idx).pin;
+        return i2c.writeRegWord(reg, (short)data);
     }
 
     private native void _init();

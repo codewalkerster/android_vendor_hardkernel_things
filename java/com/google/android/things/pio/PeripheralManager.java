@@ -38,6 +38,7 @@ import android.os.Binder;
 import com.google.android.things.pio.IThingsManager;
 import com.google.android.things.pio.impl.GpioImpl;
 import com.google.android.things.pio.impl.PwmImpl;
+import com.google.android.things.pio.impl.I2cImpl;
 
 public final class PeripheralManager {
     private static final String TAG = "PeripheralManager";
@@ -97,6 +98,16 @@ public final class PeripheralManager {
         return pwmList;
     }
 
+    public List<String> getI2cBusList() {
+        List<String> i2cList = null;
+        try {
+            i2cList = mThingsManager.getI2cList();
+        } catch (RemoteException e) {
+            Log.d(TAG, "getI2cBusList is not implemented");
+        }
+        return i2cList;
+    }
+
     public Gpio openGpio(String name) throws IOException {
         Gpio gpio = null;
         try {
@@ -124,6 +135,20 @@ public final class PeripheralManager {
         if (pwm == null)
             throw new IOException("pwm(" + name +") is not opened");
         return pwm;
+    }
+
+    public I2cDevice openI2cDevice(String name, int address) throws IOException {
+        I2cDevice i2c = null;
+        try {
+            int idx = mThingsManager.getI2cIdxBy(name, address);
+            i2c = new I2cImpl(name, idx, mThingsManager, thingsId);
+        } catch (RemoteException e) {
+            Log.d(TAG, "openI2cDevice is not implemented");
+            return null;
+        }
+        if (i2c == null)
+            throw new IOException("I2cDevice(" + name +"-" + address + ") is not opend");
+        return i2c;
     }
 
     @Override

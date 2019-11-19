@@ -32,6 +32,8 @@ interface IThingsManager {
     void releaseClient(int thingsId);
     void register(int pin, int thingsId);
     void unregister(int pin, int thingsId);
+    void registerI2c(int idx, int thingsId);
+    void unregisterI2c(int idx, int thingsId);
 
     boolean closeGpio(int pin);
 
@@ -52,4 +54,19 @@ interface IThingsManager {
     boolean setEnabled(int pin, boolean enabled);
     boolean setPwmDutyCycle(int pin, double duty_cycle);
     boolean setPwmFrequencyHz(int pin, double frequency);
+
+    /* i2c */
+    List<String> getI2cList();
+    int getI2cIdxBy(String name, int address);
+    boolean closeI2c(int idx);
+
+    byte[] readI2c(int idx, int length);
+    byte[] readI2cRegBuffer(int idx, int reg, int length);
+    byte readI2cRegByte(int idx, int reg);
+    int readI2cRegWord(int idx, int reg);
+
+    boolean writeI2c (int idx, in byte[] buffer, int length);
+    boolean writeI2cRegBuffer(int idx, int reg, in byte[] buffer, int length);
+    boolean writeI2cRegByte(int idx, int reg, byte data);
+    boolean writeI2cRegWord(int idx, int reg, int data);
 }
