@@ -112,9 +112,8 @@ public class GpioImpl implements Gpio,AutoCloseable {
             throw new IOException("callback is null.");
 
 
-        Handler runHandle = checkHandler(handler);
-        // TODO: runHandler is not used. please use me!
         ((CallbackWrapper)mWrapperCallback).callback = callback;
+        ((CallbackWrapper)mWrapperCallback).setHandler(checkHandler(handler));
         try {
         mThingsManager.registerGpioCallback(pin, mWrapperCallback);
         }catch(RemoteException e) {
@@ -175,6 +174,7 @@ public class GpioImpl implements Gpio,AutoCloseable {
             try {
                 mThingsManager.unregisterGpioCallback(pin, mWrapperCallback);
                 ((CallbackWrapper)mWrapperCallback).callback = null;
+                ((CallbackWrapper)mWrapperCallback).executor = null;
             } catch (RemoteException e) {
                 Log.d(TAG, "Remote Exception!!");
             }

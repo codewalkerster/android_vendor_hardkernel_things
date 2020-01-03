@@ -23,7 +23,10 @@ import com.google.android.things.pio.GpioCallback;
 import com.google.android.things.pio.IGpioCallback;
 import com.google.android.things.pio.IThingsManager;
 
+import com.google.android.things.pio.util.CallbackHandlerExecutor;
+
 import android.util.Log;
+import android.os.Handler;
 
 import android.os.RemoteException;
 public class CallbackWrapper extends IGpioCallback.Stub {
@@ -32,30 +35,44 @@ public class CallbackWrapper extends IGpioCallback.Stub {
     public IThingsManager manager;
     public Gpio gpio;
 
+    private IGpioCallback self;
     private static class Lock{}
     private Lock mLock = new Lock();
+    public CallbackHandlerExecutor executor;
 
     public CallbackWrapper(int pin, IThingsManager manager, Gpio gpio) {
         this.pin = pin;
         this.manager = manager;
         this.gpio = gpio;
+        self = this;
+    }
+
+    public void setHandler(Handler handler) {
+        executor = new CallbackHandlerExecutor(handler);
+        executor.setRunnable(new Runnable() {
+            public void run() {
+                synchronized(mLock) {
+                    if (callback != null) {
+                        boolean result = callback.onGpioEdge(gpio);
+
+                        if (result == false) {
+                            try {
+                                manager.unregisterGpioCallback(pin, self);
+                                callback = null;
+                                executor = null;
+                            } catch (RemoteException e) {
+                                Log.d("GPIO_CALLBACK", "things manager is not exist");
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     @Override
     public void onGpioEdge() {
-        synchronized (mLock) {
-            boolean result = true;
-            if (callback != null)
-                result = callback.onGpioEdge(gpio);
-            if (result == false) {
-                try {
-                    manager.unregisterGpioCallback(pin, this);
-                    callback = null;
-                } catch (RemoteException e) {
-                    Log.d("GPIO_CALLBACK", "things manager is not exist");
-                }
-            }
-        }
+        executor.execute();
     }
 
     @Override
