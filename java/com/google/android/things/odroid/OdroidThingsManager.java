@@ -47,23 +47,6 @@ public class OdroidThingsManager extends IThingsManager.Stub {
 
     static final String TAG = "OdroidThingsManager";
 
-    private boolean isExistPid(int pid) { // TODO: Remove it when confirmed that is binderDied always called.
-        boolean result = false;
-        try {
-            List<RunningAppProcessInfo> procs =
-                ActivityManager.getService().getRunningAppProcesses();
-            int N = procs.size();
-            for (int i=0; i<N; i++) {
-                RunningAppProcessInfo proc = procs.get(i);
-                if (proc.pid == pid) {
-                    result = true;
-                    break;
-                }
-            }
-        } catch (RemoteException e) {}
-        return result;
-    }
-
     private final class WakeLock implements IBinder.DeathRecipient {
         public final IBinder mListenr;
         public final int mClientId;
