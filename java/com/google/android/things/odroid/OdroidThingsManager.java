@@ -27,138 +27,20 @@ import com.google.android.things.odroid.Pin;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 
 import android.os.IBinder;
-import android.os.Binder;
-import android.os.RemoteException;
-import android.util.Log;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
+
 /**
  * @hide
  */
 public class OdroidThingsManager extends IThingsManager.Stub {
 
     static final String TAG = "OdroidThingsManager";
-
-    private final class WakeLock implements IBinder.DeathRecipient {
-        public final IBinder mListenr;
-        public final int mClientId;
-
-        public WakeLock(IBinder listener, int clientId) {
-            mListenr = listener;
-            mClientId = clientId;
-        }
-
-        @Override
-        public void binderDied() {
-            mListenr.unlinkToDeath(this, 0);
-            releaseClient(mClientId);
-            Log.d(TAG, "death things manager clientId- " + mClientId);
-        }
-    }
-
-    // per Peripheral manager called values
-    private class ThingsInstance {
-        public Set<Integer> occupiedPin;
-        public Set<Integer> usedI2c;
-        public WakeLock wakeLock;
-
-        public ThingsInstance(int thingsId, IBinder listener) {
-            occupiedPin = new HashSet<>();
-            usedI2c = new HashSet<>();
-            wakeLock = new WakeLock(listener, thingsId);
-            try {
-                listener.linkToDeath(wakeLock, 0);
-            } catch(Exception e) {}
-        }
-
-        public void add(int pin) {
-            occupiedPin.add(pin);
-        }
-
-        public void remove(int pin) {
-            occupiedPin.remove(pin);
-        }
-
-        public void addI2c(int idx) {
-            usedI2c.add(idx);
-        }
-
-        public void removeI2c(int idx) {
-            usedI2c.remove(idx);
-        }
-
-        public void release() {
-            Iterator pinIterator = occupiedPin.iterator();
-            while (pinIterator.hasNext())
-                closePinBy((Integer)pinIterator.next());
-            occupiedPin.clear();
-            occupiedPin = null;
-
-            Iterator i2cIterator = usedI2c.iterator();
-            while (i2cIterator.hasNext())
-                closeI2cBy((Integer)i2cIterator.next());
-            usedI2c.clear();
-            usedI2c = null;
-
-            wakeLock = null;
-        }
-    }
-
-    Map<Integer, ThingsInstance> instanceList;
-
-    @Override
-    public int registNgetId(IBinder listener) {
-        int pid = Binder.getCallingPid();
-        ThingsInstance instance = new ThingsInstance(pid, listener);
-        instanceList.put(pid, instance);
-        return pid;
-    }
-
-    public void releaseClient(int thingsId) {
-        ThingsInstance instance = instanceList.get(thingsId);
-        instance.release();
-        instanceList.remove(thingsId);
-    }
-
-    public void register(int pin, int thingsId) {
-        ThingsInstance instance = instanceList.get(thingsId);
-        instance.add(pin);
-    }
-
-    public void unregister(int pin, int thingsId) {
-        ThingsInstance instance = instanceList.get(thingsId);
-        instance.remove(pin);
-    }
-
-    public void registerI2c(int idx, int thingsId) {
-        ThingsInstance instance = instanceList.get(thingsId);
-        instance.addI2c(idx);
-    }
-
-    public void unregisterI2c(int idx, int thingsId) {
-        ThingsInstance instance = instanceList.get(thingsId);
-        instance.removeI2c(idx);
-    }
-
-    private List<String> getFilteredListOf(int mode) {
-        List<String> list = _getListOf(mode);
-
-        for(ThingsInstance instance: instanceList.values()) {
-            instance.occupiedPin.forEach(
-                    (pin) -> {
-                        if (list.contains(pin.toString())) list.remove(pin.toString());
-                    });
-        }
-        return list;
-    }
 
     class PinState {
         public Pin pin = null;
@@ -173,6 +55,8 @@ public class OdroidThingsManager extends IThingsManager.Stub {
     private static Map<Integer, I2cState> i2cStateList;
     private List<String> i2cList = null;
     private static int i2cIdx = 0;
+
+    private ThingsClientManager clientManager;
 
     private void initPinStateList() {
         pinStateList = new ArrayList<PinState>();
@@ -194,8 +78,46 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         _init();
         initPinStateList();
 
-        instanceList = new HashMap<>();
+        clientManager = new ThingsClientManager(this);
     }
+
+    @Override
+    public int registNgetId(IBinder listener) {
+        return clientManager.create(listener);
+    }
+
+    public void releaseClient(int clientId) {
+        clientManager.releaseClient(clientId);
+    }
+
+    public void register(int pin, int clientId) {
+        clientManager.register(pin, Device.GPIO, clientId);
+    }
+
+    public void unregister(int pin, int clientId) {
+        clientManager.unregister(pin, Device.GPIO, clientId);
+    }
+
+    public void registerI2c(int idx, int clientId) {
+        clientManager.register(idx, Device.I2C, clientId);
+    }
+
+    public void unregisterI2c(int idx, int clientId) {
+        clientManager.unregister(idx, Device.I2C, clientId);
+    }
+
+    private List<String> getFilteredListOf(int mode) {
+        List<String> list = _getListOf(mode);
+
+        for(ThingsClient client: clientManager.clients()) {
+            client.getOccupiedPin().forEach(
+                    (pin) -> {
+                        if (list.contains(pin.toString())) list.remove(pin.toString());
+                    });
+        }
+        return list;
+    }
+
 
     private interface InitCallback {
         Pin initPinBy(int idx);
@@ -215,7 +137,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         return -1;
     }
 
-    private boolean closePinBy(int idx) {
+    public boolean closePinBy(int idx) {
         PinState pin = pinStateList.get(idx);
         if(pin.pin == null)
             return false;
@@ -335,7 +257,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         return idx;
     }
 
-    private boolean closeI2cBy(int idx) {
+    public boolean closeI2cBy(int idx) {
         I2cState i2c = i2cStateList.get(idx);
         if (i2c == null)
             return false;
