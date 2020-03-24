@@ -16,29 +16,12 @@
  *    If not, see <http://www.gnu.org/licenses/>.
  */
 
-// the library
-//==============================================================
-java_library {
+package com.google.android.things.pio;
 
-    srcs: [
-        "java/**/*.java",
-        "java/com/google/android/things/pio/IThingsManager.aidl",
-        "java/com/google/android/things/pio/IGpioCallback.aidl",
-        "java/com/google/android/things/pio/IUartDeviceCallback.aidl",
-    ],
-
-    name: "Things",
-
-    aidl: {
-        export_include_dirs: [
-            "java",
-        ],
-    },
-
-    dxflags: ["--core-library"],
-
-    proprietary: true,
-
-    libs: [],
-
+/**
+ * @hide
+ */
+oneway interface IUartDeviceCallback {
+    void onUartDeviceDataAvailable();
+    void onUartDeviceError(int error);
 }

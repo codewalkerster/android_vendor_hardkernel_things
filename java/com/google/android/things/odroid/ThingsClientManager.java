@@ -65,6 +65,9 @@ public class ThingsClientManager {
             case I2C:
                 client.addI2c(pin);
                 break;
+            case UART:
+                client.addUart(pin);
+                break;
         }
     }
 
@@ -77,10 +80,13 @@ public class ThingsClientManager {
             case I2C:
                 client.removeI2c(pin);
                 break;
+            case UART:
+                client.removeUart(pin);
+                break;
         }
     }
 }
 
 enum Device {
-    GPIO, PWM, I2C
+    GPIO, PWM, I2C, UART
 }

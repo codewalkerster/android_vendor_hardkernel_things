@@ -33,6 +33,7 @@ public class ThingsClient {
     private static final String TAG = "OdroidThingsClient";
     private Set<Integer> occupiedPin;
     private Set<Integer> usedI2c;
+    private Set<Integer> occupiedUart;
     private ClientBinder binder;
     private OdroidThingsManager manager;
 
@@ -58,6 +59,7 @@ public class ThingsClient {
     public ThingsClient (int clientId, IBinder listener, ThingsClientManager manager) {
         occupiedPin = new HashSet<>();
         usedI2c = new HashSet<>();
+        occupiedUart = new HashSet<>();
         binder = new ClientBinder(listener, clientId, manager);
         try {
             listener.linkToDeath(binder, 0);
@@ -70,6 +72,10 @@ public class ThingsClient {
 
     public Set<Integer> getOccupiedPin() {
         return occupiedPin;
+    }
+
+    public Set<Integer> getOccupiedUart() {
+        return occupiedUart;
     }
 
     public void add(int pin) {
@@ -88,6 +94,14 @@ public class ThingsClient {
         usedI2c.remove(idx);
     }
 
+    public void addUart(int idx) {
+        occupiedUart.add(idx);
+    }
+
+    public void removeUart(int idx) {
+        occupiedUart.remove(idx);
+    }
+
     public void release() {
         Iterator pinIterator = occupiedPin.iterator();
         while (pinIterator.hasNext())
@@ -101,6 +115,13 @@ public class ThingsClient {
         usedI2c.clear();
         usedI2c = null;
 
+        Iterator uartIterator = occupiedUart.iterator();
+        while (uartIterator.hasNext())
+            manager.closeUartBy((Integer)uartIterator.next());
+        occupiedUart.clear();
+        occupiedUart = null;
+
+        //?? should check
         binder = null;
         manager = null;
     }

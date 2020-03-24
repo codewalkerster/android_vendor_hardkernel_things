@@ -23,6 +23,7 @@ import com.google.android.things.pio.GpioCallback;
 import com.google.android.things.pio.I2cDevice;
 import com.google.android.things.pio.Pwm;
 import com.google.android.things.pio.SpiDevice;
+import com.google.android.things.pio.UartDevice;
 
 import java.io.IOException;
 
@@ -39,6 +40,7 @@ import com.google.android.things.pio.IThingsManager;
 import com.google.android.things.pio.impl.GpioImpl;
 import com.google.android.things.pio.impl.PwmImpl;
 import com.google.android.things.pio.impl.I2cImpl;
+import com.google.android.things.pio.impl.UartImpl;
 
 public final class PeripheralManager {
     private static final String TAG = "PeripheralManager";
@@ -108,6 +110,16 @@ public final class PeripheralManager {
         return i2cList;
     }
 
+    public List<String> getUartDeviceList() {
+        List<String> uartList = null;
+        try {
+            uartList = mThingsManager.getUartList();
+        } catch (RemoteException e) {
+            Log.d(TAG, "getUartDeviceList is not implemented");
+        }
+        return uartList;
+    }
+
     public Gpio openGpio(String name) throws IOException {
         Gpio gpio = null;
         try {
@@ -127,7 +139,8 @@ public final class PeripheralManager {
         Pwm pwm = null;
         try {
             int pin = mThingsManager.getPwmPinBy(name);
-            pwm = new PwmImpl(name, pin, mThingsManager, thingsId);
+            if (pin != -1)
+                pwm = new PwmImpl(name, pin, mThingsManager, thingsId);
         } catch (RemoteException e) {
             Log.d(TAG, "openPwm is not implemented");
             return null;
@@ -147,8 +160,23 @@ public final class PeripheralManager {
             return null;
         }
         if (i2c == null)
-            throw new IOException("I2cDevice(" + name +"-" + address + ") is not opend");
+            throw new IOException("I2cDevice(" + name +"-" + address + ") is not opened");
         return i2c;
+    }
+
+    public UartDevice openUartDevice(String name) throws IOException {
+        UartDevice uart = null;
+        try {
+            int idx = mThingsManager.getUartIdxBy(name);
+            if (idx != -1)
+                uart = new UartImpl(name, idx, mThingsManager, thingsId);
+        } catch (RemoteException e) {
+            Log.d(TAG, "openUartDevice is not implemented");
+            return null;
+        }
+        if (uart == null)
+            throw new IOException("UartDevice(" + name +") is not opened");
+        return uart;
     }
 
     @Override

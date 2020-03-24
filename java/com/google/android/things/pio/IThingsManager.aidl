@@ -19,6 +19,7 @@
 package com.google.android.things.pio;
 
 import com.google.android.things.pio.IGpioCallback;
+import com.google.android.things.pio.IUartDeviceCallback;
 import android.os.IBinder;
 /**
  * @hide
@@ -34,6 +35,8 @@ interface IThingsManager {
     void unregister(int pin, int thingsId);
     void registerI2c(int idx, int thingsId);
     void unregisterI2c(int idx, int thingsId);
+    void registerUart(int idx, int thingsId);
+    void unregisterUart(int idx, int thingsId);
 
     boolean closeGpio(int pin);
 
@@ -69,4 +72,25 @@ interface IThingsManager {
     boolean writeI2cRegBuffer(int idx, int reg, in byte[] buffer, int length);
     boolean writeI2cRegByte(int idx, int reg, byte data);
     boolean writeI2cRegWord(int idx, int reg, int data);
+
+    /* uart */
+    List<String> getUartList();
+    int getUartIdxBy(String name);
+
+    boolean closeUartBy(int idx);
+    boolean clearModemControl(int idx, int lines);
+    boolean flush(int idx, int direction);
+    boolean sendBreak(int idx, int duration);
+    boolean setBaudrate(int idx, int rate);
+    boolean setDataSize(int idx, int size);
+    boolean setHardwareFlowControl(int idx, int mode);
+    boolean setModemControl(int idx, int lines);
+    boolean setParity(int idx, int mode);
+    boolean setStopBits(int idx, int bits);
+
+    byte[] readUart(int idx, int length);
+    int writeUart(int idx, in byte[] buffer, int length);
+
+    void registerUartDeviceCallback(int idx, IUartDeviceCallback callback);
+    void unregisterUartDeviceCallback(int idx, IUartDeviceCallback callback);
 }

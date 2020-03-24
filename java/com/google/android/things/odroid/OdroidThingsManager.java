@@ -21,10 +21,12 @@ package com.google.android.things.odroid;
 import com.google.android.things.pio.Gpio;
 import com.google.android.things.pio.IThingsManager;
 import com.google.android.things.pio.IGpioCallback;
+import com.google.android.things.pio.IUartDeviceCallback;
 import com.google.android.things.pio.CallbackWrapper;
 
 import com.google.android.things.odroid.Pin;
 
+import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -51,8 +53,13 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         public int address;
     }
 
+    class UartState extends PinState {
+    }
+
     private static List<PinState> pinStateList;
     private static Map<Integer, I2cState> i2cStateList;
+    private static List<UartState> uartStateList;
+
     private List<String> i2cList = null;
     private static int i2cIdx = 0;
 
@@ -61,6 +68,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
     private void initPinStateList() {
         pinStateList = new ArrayList<PinState>();
         i2cStateList = new HashMap<>();
+        uartStateList = new ArrayList<>();
         i2cList = _getListOf(PinMode.I2C);
 
         List<String> pinNames = _getPinName();
@@ -71,6 +79,15 @@ public class OdroidThingsManager extends IThingsManager.Stub {
             state.pin = null;
             state.name = pinNames.get(i);
             pinStateList.add(state);
+        }
+
+        List<String> uartList = _getListOf(PinMode.UART);
+        size = uartList.size();
+        for (int i=0; i<size; i++) {
+            UartState state = new UartState();
+            state.pin = null;
+            state.name = uartList.get(i);
+            uartStateList.add(state);
         }
     }
 
@@ -106,11 +123,26 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         clientManager.unregister(idx, Device.I2C, clientId);
     }
 
+    public void registerUart(int idx, int clientId) {
+        clientManager.register(idx, Device.UART, clientId);
+    }
+
+    public void unregisterUart(int idx, int clientId) {
+        clientManager.unregister(idx, Device.UART, clientId);
+    }
+
     private List<String> getFilteredListOf(int mode) {
         List<String> list = _getListOf(mode);
+        Set<Integer> pinList;
 
+        // can I use pinStateList or uartStateList?
         for(ThingsClient client: clientManager.clients()) {
-            client.getOccupiedPin().forEach(
+            if (mode == PinMode.UART)
+                pinList = client.getOccupiedUart();
+            else //GPIO, PWM
+                pinList = client.getOccupiedPin();
+
+            pinList.forEach(
                     (pin) -> {
                         if (list.contains(pin.toString())) list.remove(pin.toString());
                     });
@@ -311,6 +343,99 @@ public class OdroidThingsManager extends IThingsManager.Stub {
     public boolean writeI2cRegWord(int idx, int reg, int data) {
         OdroidI2c i2c = (OdroidI2c)i2cStateList.get(idx).pin;
         return i2c.writeRegWord(reg, (short)data);
+    }
+
+    //Uart
+    public List<String> getUartList() {
+        return getFilteredListOf(PinMode.UART);
+    }
+
+    public int getUartIdxBy(String name) {
+        for (UartState uart: uartStateList) {
+            if (uart.name.equals(name)) {
+                if (uart.pin == null) {
+                    int idx = uartStateList.indexOf(uart);
+                    uart.pin = new OdroidUart(idx);
+                    return idx;
+                }
+                break;
+            }
+        }
+        return -1;
+    }
+
+    public boolean closeUartBy(int idx) {
+        UartState uart = uartStateList.get(idx);
+        if (uart.pin == null)
+            return false;
+
+        uart.pin.close();
+        uart.pin = null;
+        return true;
+    }
+
+    public boolean flush(int idx, int direction) {
+       OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
+       return uart.flush(direction);
+    }
+
+    public boolean sendBreak(int idx, int duration) {
+       OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
+       return uart.sendBreak(duration);
+    }
+
+    public boolean setBaudrate(int idx, int rate) {
+       OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
+       return uart.setBaudrate(rate);
+    }
+
+    public boolean setDataSize(int idx, int size) {
+       OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
+       return uart.setDataSize(size);
+    }
+
+    public boolean setHardwareFlowControl(int idx, int mode) {
+       OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
+       return uart.setHardwareFlowControl(mode);
+    }
+
+    public boolean setParity(int idx, int mode) {
+       OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
+       return uart.setParity(mode);
+    }
+
+    public boolean setStopBits(int idx, int bits) {
+       OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
+       return uart.setStopBits(bits);
+    }
+
+    public boolean clearModemControl(int idx, int lines) {
+        return false;
+    }
+
+    public boolean setModemControl(int idx, int lines) {
+        return false;
+    }
+
+    public byte[] readUart(int idx, int length) {
+       OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
+       return uart.read(length);
+    }
+
+    public int writeUart(int idx, byte[] buffer, int length) {
+       OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
+       return uart.write(buffer, length);
+    }
+
+    public void registerUartDeviceCallback(int idx, IUartDeviceCallback callback) {
+       OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
+       uart.registerCallback(callback);
+    }
+
+    public void unregisterUartDeviceCallback(int idx, IUartDeviceCallback callback) {
+       OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
+       if (uart != null)
+           uart.unregisterCallback(callback);
     }
 
     private native void _init();
