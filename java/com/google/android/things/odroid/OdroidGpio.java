@@ -69,6 +69,8 @@ public class OdroidGpio implements Pin {
     }
 
     public void setValue(boolean value) {
+        if (gpioState.activeType == Gpio.ACTIVE_LOW)
+            value =! value;
         mGpioNative.setValue(gpioState.pin, value);
     }
 
