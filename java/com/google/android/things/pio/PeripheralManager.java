@@ -28,7 +28,6 @@ import com.google.android.things.pio.UartDevice;
 import java.io.IOException;
 
 import java.util.List;
-import java.util.ArrayList;
 import android.util.Log;
 
 import android.os.ServiceManager;
