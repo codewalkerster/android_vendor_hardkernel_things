@@ -1,5 +1,5 @@
 /*
- *    Copyright (c) 2019 Sangchul Go <luke.go@hardkernel.com>
+ *    Copyright (c) 2020 Sangchul Go <luke.go@hardkernel.com>
  *
  *    OdroidThings is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU Lesser General Public License as
@@ -16,29 +16,9 @@
  *    If not, see <http://www.gnu.org/licenses/>.
  */
 
-// the library
-//==============================================================
-java_library {
+package com.google.android.things.pio;
 
-    srcs: [
-        "java/**/*.java",
-        "java/com/google/android/things/pio/IThingsManager.aidl",
-        "java/com/google/android/things/pio/IGpioCallback.aidl",
-        "java/com/google/android/things/pio/IUartDeviceCallback.aidl",
-    ],
-
-    name: "Things",
-
-    aidl: {
-        export_include_dirs: [
-            "java",
-        ],
-    },
-
-    dxflags: ["--core-library"],
-
-    proprietary: true,
-
-    libs: [],
-
+public interface UartDeviceCallback {
+    public abstract boolean onUartDeviceDataAvailable(UartDevice uart);
+    public void onUartDeviceError(UartDevice uart, int error);
 }

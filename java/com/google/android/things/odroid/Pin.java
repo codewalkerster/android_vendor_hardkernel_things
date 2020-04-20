@@ -32,6 +32,7 @@ public interface Pin {
         I2C,
         PWM,
         SPI,
+        UART,
     }
 }
 

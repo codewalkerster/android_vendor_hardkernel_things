@@ -1,5 +1,5 @@
 /*
- *    Copyright (c) 2019 Sangchul Go <luke.go@hardkernel.com>
+ *    Copyright (c) 2020 Sangchul Go <luke.go@hardkernel.com>
  *
  *    OdroidThings is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU Lesser General Public License as
@@ -16,29 +16,23 @@
  *    If not, see <http://www.gnu.org/licenses/>.
  */
 
-// the library
-//==============================================================
-java_library {
+package com.google.android.things.userdriver.sensor;
 
-    srcs: [
-        "java/**/*.java",
-        "java/com/google/android/things/pio/IThingsManager.aidl",
-        "java/com/google/android/things/pio/IGpioCallback.aidl",
-        "java/com/google/android/things/pio/IUartDeviceCallback.aidl",
-    ],
+public class UserSensorReading {
+    public UserSensorReading(float[] values) {
+        throw new RuntimeException("Stub!");
+    }
 
-    name: "Things",
+    public UserSensorReading(float[] values, int status) {
+        throw new RuntimeException("Stub!");
+    }
 
-    aidl: {
-        export_include_dirs: [
-            "java",
-        ],
-    },
+    public boolean equals(Object object) {
+        throw new RuntimeException("Stub!");
+    }
 
-    dxflags: ["--core-library"],
-
-    proprietary: true,
-
-    libs: [],
-
+    public int hashCode() {
+        throw new RuntimeException("Stub!");
+    }
 }
+
