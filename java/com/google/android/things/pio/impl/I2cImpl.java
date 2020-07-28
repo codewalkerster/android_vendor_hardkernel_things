@@ -69,7 +69,7 @@ public class I2cImpl implements I2cDevice, AutoCloseable {
 
     public void read(byte[] buffer, int length) throws IOException, IllegalArgumentException {
         if (buffer.length < length)
-            throw new IllegalArgumentException("length is bigger then buffer size");
+            throw new IllegalArgumentException("length is bigger than buffer size");
 
         try {
             byte[] result = mThingsManager.readI2c(idx, length);
@@ -80,7 +80,7 @@ public class I2cImpl implements I2cDevice, AutoCloseable {
 
     public void readRegBuffer(int reg, byte[] buffer, int length) throws IOException, IllegalArgumentException {
         if (buffer.length < length)
-            throw new IllegalArgumentException("length is bigger then buffer size");
+            throw new IllegalArgumentException("length is bigger than buffer size");
 
         try {
             byte[] result = mThingsManager.readI2cRegBuffer(idx, reg, length);
@@ -108,7 +108,7 @@ public class I2cImpl implements I2cDevice, AutoCloseable {
     public void write(byte[] buffer, int length) throws IOException, IllegalArgumentException {
         boolean status = false;
         if (buffer.length < length)
-            throw new IllegalArgumentException("length is bigger then buffer size");
+            throw new IllegalArgumentException("length is bigger than buffer size");
 
         try {
             status = mThingsManager.writeI2c(idx, buffer, length);
@@ -121,7 +121,7 @@ public class I2cImpl implements I2cDevice, AutoCloseable {
     public void writeRegBuffer(int reg, byte[] buffer, int length) throws IOException, IllegalArgumentException {
         boolean status = false;
         if (buffer.length < length)
-            throw new IllegalArgumentException("length is bigger then buffer size");
+            throw new IllegalArgumentException("length is bigger than buffer size");
 
         try {
             status = mThingsManager.writeI2cRegBuffer(idx, reg, buffer, length);

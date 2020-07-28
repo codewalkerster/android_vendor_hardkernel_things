@@ -37,14 +37,6 @@ public class OdroidUart implements Pin {
             this.idx = idx;
         }
         public int idx;
-
-        public int direction;
-        public int duration;
-        public int rate;
-        public int dataSize;
-        public int parity;
-        public int flowControl;
-        public int bits;
     }
 
     public OdroidUart(int idx) {
@@ -63,38 +55,31 @@ public class OdroidUart implements Pin {
     }
 
     public boolean flush(int direction) {
-        state.direction = direction;
-        return mUartNative.flush(state.idx, state.direction);
+        return mUartNative.flush(state.idx, direction);
     }
 
     public boolean sendBreak(int duration) {
-        state.duration = duration;
-        return mUartNative.sendBreak(state.idx, state.duration);
+        return mUartNative.sendBreak(state.idx, duration);
     }
 
     public boolean setBaudrate(int rate) {
-        state.rate = rate;
-        return mUartNative.setBaudrate(state.idx, state.rate);
+        return mUartNative.setBaudrate(state.idx, rate);
     }
 
-    public boolean setDataSize(int size) {
-        state.dataSize = size;
-        return mUartNative.setDataSize(state.idx, state.dataSize);
+    public boolean setDataSize(int dataSize) {
+        return mUartNative.setDataSize(state.idx, dataSize);
     }
 
-    public boolean setHardwareFlowControl(int mode) {
-        state.flowControl = mode;
-        return mUartNative.setHardwareFlowControl(state.idx, state.flowControl);
+    public boolean setHardwareFlowControl(int flowControl) {
+        return mUartNative.setHardwareFlowControl(state.idx, flowControl);
     }
 
-    public boolean setParity(int mode) {
-        state.parity = mode;
-        return mUartNative.setParity(state.idx, state.parity);
+    public boolean setParity(int parity) {
+        return mUartNative.setParity(state.idx, parity);
     }
 
     public boolean setStopBits(int bits) {
-        state.bits = bits;
-        return mUartNative.setStopBits(state.idx, state.bits);
+        return mUartNative.setStopBits(state.idx, bits);
     }
 
     public byte[] read(int length) {
