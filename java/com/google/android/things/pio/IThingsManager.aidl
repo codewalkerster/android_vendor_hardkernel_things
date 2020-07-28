@@ -37,6 +37,8 @@ interface IThingsManager {
     void unregisterI2c(int idx, int thingsId);
     void registerUart(int idx, int thingsId);
     void unregisterUart(int idx, int thingsId);
+    void registerSpi(int idx, int thingsId);
+    void unregisterSpi(int idx, int thingsId);
 
     boolean closeGpio(int pin);
 
@@ -93,4 +95,20 @@ interface IThingsManager {
 
     void registerUartDeviceCallback(int idx, IUartDeviceCallback callback);
     void unregisterUartDeviceCallback(int idx, IUartDeviceCallback callback);
+
+    /* spi */
+    List<String> getSpiList();
+    int getSpiIdxBy(String name);
+
+    boolean closeSpiBy(int idx);
+    boolean setBitJustification(int idx, int justification);
+    boolean setBitsPerWord(int idx, int bitsPerWord);
+    boolean setCsChange(int idx, boolean change);
+    boolean setDelay(int idx, int delayUs);
+    boolean setSpiFrequency(int idx, int frequencyHz);
+    boolean setMode(int idx, int mode);
+
+    byte[] readSpi(int idx, int length);
+    boolean writeSpi(int idx, in byte[] data, int length);
+    byte[] transferSpi(int idx, in byte[] data, int length);
 }

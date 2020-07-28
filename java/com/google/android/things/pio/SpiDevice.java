@@ -34,7 +34,6 @@ public interface SpiDevice extends Closeable {
 
     public abstract void close() throws IOException;
     public String getName();
-    public void read (byte[] buffer, int length) throws IllegalArgumentException, IOException;
     public abstract void setBitJustification (int justification) throws IOException;
     public abstract void setBitsPerWord (int bitsPerWord) throws IOException;
     public abstract void setCsChange (boolean chnage) throws IOException;
@@ -44,4 +43,5 @@ public interface SpiDevice extends Closeable {
     public abstract void setMode(int mode) throws IOException;
     public abstract void transfer (byte[] txBuffer, byte[] rxBuffer, int length) throws IllegalArgumentException, IOException;
     public void write(byte[] buffer, int length) throws IllegalArgumentException, IOException;
+    public void read (byte[] buffer, int length) throws IllegalArgumentException, IOException;
 }

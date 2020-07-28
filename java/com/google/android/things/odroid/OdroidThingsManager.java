@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
+import android.util.Log;
 import android.os.IBinder;
 
 import android.app.ActivityManager;
@@ -56,9 +57,13 @@ public class OdroidThingsManager extends IThingsManager.Stub {
     class UartState extends PinState {
     }
 
+    class SpiState extends PinState {
+    }
+
     private static List<PinState> pinStateList;
     private static Map<Integer, I2cState> i2cStateList;
     private static List<UartState> uartStateList;
+    private static List<SpiState> spiStateList;
 
     private List<String> i2cList = null;
     private static int i2cIdx = 0;
@@ -69,6 +74,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         pinStateList = new ArrayList<PinState>();
         i2cStateList = new HashMap<>();
         uartStateList = new ArrayList<>();
+        spiStateList = new ArrayList<>();
         i2cList = _getListOf(PinMode.I2C);
 
         List<String> pinNames = _getPinName();
@@ -88,6 +94,14 @@ public class OdroidThingsManager extends IThingsManager.Stub {
             state.pin = null;
             state.name = uartList.get(i);
             uartStateList.add(state);
+        }
+
+        List<String> spiList = _getListOf(PinMode.SPI);
+        for (String spi: spiList) {
+            SpiState state = new SpiState();
+            state.pin = null;
+            state.name = spi;;
+            spiStateList.add(state);
         }
     }
 
@@ -131,16 +145,31 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         clientManager.unregister(idx, Device.UART, clientId);
     }
 
+    public void registerSpi(int idx, int clientId) {
+        clientManager.register(idx, Device.SPI, clientId);
+    }
+
+    public void unregisterSpi(int idx, int clientId) {
+        clientManager.unregister(idx, Device.SPI, clientId);
+    }
+
     private List<String> getFilteredListOf(int mode) {
         List<String> list = _getListOf(mode);
         Set<Integer> pinList;
 
         // can I use pinStateList or uartStateList?
         for(ThingsClient client: clientManager.clients()) {
-            if (mode == PinMode.UART)
-                pinList = client.getOccupiedUart();
-            else //GPIO, PWM
-                pinList = client.getOccupiedPin();
+            switch (mode) {
+                case PinMode.SPI:
+                    pinList = client.getOccupiedSpi();
+                    break;
+                case PinMode.UART:
+                    pinList = client.getOccupiedUart();
+                break;
+                default: // GPIO, PWM, etc
+                    pinList = client.getOccupiedPin();
+                    break;
+            }
 
             pinList.forEach(
                     (pin) -> {
@@ -436,6 +465,79 @@ public class OdroidThingsManager extends IThingsManager.Stub {
        OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
        if (uart != null)
            uart.unregisterCallback(callback);
+    }
+
+    public List<String> getSpiList() {
+        return getFilteredListOf(PinMode.SPI);
+    }
+
+    public int getSpiIdxBy(String name) {
+        for(int idx=0; idx < spiStateList.size(); idx++) {
+            SpiState spi = spiStateList.get(idx);
+            if (spi.name.equals(name)) {
+                if (spi.pin == null) {
+                    spi.pin = new OdroidSpi(idx);
+                    return idx;
+                }
+                break;
+            }
+        }
+        return -1;
+    }
+
+    public boolean closeSpiBy(int idx) {
+        SpiState spi = spiStateList.get(idx);
+        if (spi.pin == null)
+            return false;
+
+        spi.pin.close();
+        spi.pin = null;
+        return true;
+    }
+
+    public boolean setBitJustification(int idx, int justification) {
+        OdroidSpi spi = (OdroidSpi)spiStateList.get(idx).pin;
+        return spi.setBitJustification(justification);
+    }
+
+    public boolean setBitsPerWord(int idx, int bitsPerWord) {
+        OdroidSpi spi = (OdroidSpi)spiStateList.get(idx).pin;
+        return spi.setBitsPerWord(bitsPerWord);
+    }
+
+    public boolean setCsChange(int idx, boolean change) {
+        OdroidSpi spi = (OdroidSpi)spiStateList.get(idx).pin;
+        return spi.setCsChange(change);
+    }
+
+    public boolean setDelay(int idx, int delayUs) {
+        OdroidSpi spi = (OdroidSpi)spiStateList.get(idx).pin;
+        return spi.setDelay(delayUs);
+    }
+
+    public boolean setSpiFrequency(int idx, int frequencyHz) {
+        OdroidSpi spi = (OdroidSpi)spiStateList.get(idx).pin;
+        return spi.setFrequency(frequencyHz);
+    }
+
+    public boolean setMode(int idx, int mode) {
+        OdroidSpi spi = (OdroidSpi)spiStateList.get(idx).pin;
+        return spi.setMode(mode);
+    }
+
+    public byte[] readSpi(int idx, int length) {
+        OdroidSpi spi = (OdroidSpi)spiStateList.get(idx).pin;
+        return spi.read(length);
+    }
+
+    public boolean writeSpi(int idx, byte[] data, int length) {
+        OdroidSpi spi = (OdroidSpi)spiStateList.get(idx).pin;
+        return spi.write(data, length);
+    }
+
+    public byte[] transferSpi(int idx, byte[] data, int length) {
+        OdroidSpi spi = (OdroidSpi)spiStateList.get(idx).pin;
+        return spi.transfer(data, length);
     }
 
     private native void _init();

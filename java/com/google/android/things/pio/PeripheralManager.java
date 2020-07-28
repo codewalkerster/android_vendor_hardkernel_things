@@ -40,6 +40,7 @@ import com.google.android.things.pio.impl.GpioImpl;
 import com.google.android.things.pio.impl.PwmImpl;
 import com.google.android.things.pio.impl.I2cImpl;
 import com.google.android.things.pio.impl.UartImpl;
+import com.google.android.things.pio.impl.SpiImpl;
 
 public final class PeripheralManager {
     private static final String TAG = "PeripheralManager";
@@ -119,6 +120,16 @@ public final class PeripheralManager {
         return uartList;
     }
 
+    public List<String> getSpiBusList() {
+        List<String> spiList = null;
+        try {
+            spiList = mThingsManager.getSpiList();
+        } catch (RemoteException e) {
+            Log.d(TAG, "getSpiBusList is not implemented");
+        }
+        return spiList;
+    }
+
     public Gpio openGpio(String name) throws IOException {
         Gpio gpio = null;
         try {
@@ -176,6 +187,21 @@ public final class PeripheralManager {
         if (uart == null)
             throw new IOException("UartDevice(" + name +") is not opened");
         return uart;
+    }
+
+    public SpiDevice openSpiDevice(String name) throws IOException {
+        SpiDevice spi = null;
+        try {
+            int idx = mThingsManager.getSpiIdxBy(name);
+            if (idx != -1)
+                spi = new SpiImpl(name, idx, mThingsManager, thingsId);
+        } catch (RemoteException e) {
+            Log.d(TAG, "openSpiDevice is not implemented");
+            return null;
+        }
+        if (spi == null)
+            throw new IOException("SpiDevice(" + name +") is not opened");
+        return spi;
     }
 
     @Override

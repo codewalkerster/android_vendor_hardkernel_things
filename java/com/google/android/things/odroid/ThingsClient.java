@@ -34,6 +34,7 @@ public class ThingsClient {
     private Set<Integer> occupiedPin;
     private Set<Integer> usedI2c;
     private Set<Integer> occupiedUart;
+    private Set<Integer> occupiedSpi;
     private ClientBinder binder;
     private OdroidThingsManager manager;
 
@@ -60,6 +61,7 @@ public class ThingsClient {
         occupiedPin = new HashSet<>();
         usedI2c = new HashSet<>();
         occupiedUart = new HashSet<>();
+        occupiedSpi = new HashSet<>();
         binder = new ClientBinder(listener, clientId, manager);
         try {
             listener.linkToDeath(binder, 0);
@@ -76,6 +78,10 @@ public class ThingsClient {
 
     public Set<Integer> getOccupiedUart() {
         return occupiedUart;
+    }
+
+    public Set<Integer> getOccupiedSpi() {
+        return occupiedSpi;
     }
 
     public void add(int pin) {
@@ -102,6 +108,14 @@ public class ThingsClient {
         occupiedUart.remove(idx);
     }
 
+    public void addSpi(int idx) {
+        occupiedSpi.add(idx);
+    }
+
+    public void removeSpi(int idx) {
+        occupiedSpi.remove(idx);
+    }
+
     public void release() {
         Iterator pinIterator = occupiedPin.iterator();
         while (pinIterator.hasNext())
@@ -120,6 +134,12 @@ public class ThingsClient {
             manager.closeUartBy((Integer)uartIterator.next());
         occupiedUart.clear();
         occupiedUart = null;
+
+        Iterator spiIterator = occupiedSpi.iterator();
+        while (spiIterator.hasNext())
+            manager.closeSpiBy((Integer)spiIterator.next());
+        occupiedSpi.clear();
+        occupiedSpi = null;
 
         //?? should check
         binder = null;
