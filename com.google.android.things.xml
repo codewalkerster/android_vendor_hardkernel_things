@@ -23,5 +23,5 @@
     </permission>
 
     <library name="com.google.android.things"
-        file="/vendor/framework/Things.jar" />
+        file="/system/framework/Things.jar" />
 </permissions>

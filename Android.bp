@@ -18,27 +18,25 @@
 
 // the library
 //==============================================================
-java_library {
-
+filegroup {
+    name: "things-srcs",
     srcs: [
         "java/**/*.java",
         "java/com/google/android/things/pio/IThingsManager.aidl",
         "java/com/google/android/things/pio/IGpioCallback.aidl",
         "java/com/google/android/things/pio/IUartDeviceCallback.aidl",
     ],
+    path: "java",
+}
 
+java_library {
     name: "Things",
+    installable: true,
+    srcs: [":things-srcs"],
 
     aidl: {
         export_include_dirs: [
             "java",
         ],
     },
-
-    dxflags: ["--core-library"],
-
-    proprietary: true,
-
-    libs: [],
-
 }
