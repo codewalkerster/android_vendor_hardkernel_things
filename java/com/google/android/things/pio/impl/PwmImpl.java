@@ -21,6 +21,7 @@ package com.google.android.things.pio.impl;
 import com.google.android.things.pio.Pwm;
 import com.google.android.things.pio.IThingsManager;
 
+import java.lang.AutoCloseable;
 import java.io.IOException;
 
 import android.os.RemoteException;
@@ -29,7 +30,7 @@ import android.util.Log;
 /**
  * @hide
  */
-public class PwmImpl implements Pwm {
+public class PwmImpl implements Pwm, AutoCloseable {
     static final String TAG = "PwmImpl";
     final String name;
     final int pin;
@@ -46,6 +47,7 @@ public class PwmImpl implements Pwm {
         } catch (RemoteException e) {}
     }
 
+    @Override
     public void close() throws IOException {
         boolean result = false;
         try {
