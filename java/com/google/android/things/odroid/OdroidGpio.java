@@ -48,7 +48,7 @@ public class OdroidGpio implements Pin {
 
     public OdroidGpio(int pin) {
         gpioState = new GpioState(pin);
-        gpioState.activeType = Gpio.ACTIVE_HIGH;
+        setActiveType(Gpio.ACTIVE_HIGH);
     }
 
     @Override
@@ -84,6 +84,10 @@ public class OdroidGpio implements Pin {
     public void setActiveType(int activeType) {
         gpioState.activeType = activeType;
         mGpioNative.setActiveType(gpioState.pin, activeType);
+    }
+
+    public int getActiveType() {
+        return gpioState.activeType;
     }
 
     public void setEdgeTriggerType(int edgeTriggerType) {
