@@ -42,6 +42,7 @@ public class GpioImpl implements Gpio,AutoCloseable {
     final String name;
     final int pin;
     int direction;
+    int activeType;
 
     private final IThingsManager mThingsManager;
     private IGpioCallback mWrapperCallback;
@@ -56,6 +57,7 @@ public class GpioImpl implements Gpio,AutoCloseable {
         this.thingsId = thingsId;
         try {
             mThingsManager.register(pin, thingsId);
+            activeType = mThingsManager.getGpioActiveType(pin);
         } catch (RemoteException e) {}
     }
 
@@ -125,6 +127,7 @@ public class GpioImpl implements Gpio,AutoCloseable {
             (activeType != ACTIVE_HIGH)) {
             throw new IllegalArgumentException("active Type should be LOW or HIGH");
         }
+        this.activeType = activeType;
         try {
             mThingsManager.setGpioActiveType(pin, activeType);
         } catch (RemoteException e) {

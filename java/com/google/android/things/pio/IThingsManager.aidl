@@ -46,6 +46,7 @@ interface IThingsManager {
     void setGpioValue(int pin, boolean value);
     boolean getGpioValue(int pin);
     void setGpioActiveType(int pin, int activeType);
+    int getGpioActiveType(int pin);
     void setEdgeTriggerType(int pin, int edgeTriggerType);
 
     void registerGpioCallback(int pin, IGpioCallback callback);

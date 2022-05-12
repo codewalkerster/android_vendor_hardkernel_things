@@ -245,6 +245,11 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         gpio.setActiveType(activeType);
     }
 
+    public int getGpioActiveType(int pin) {
+        OdroidGpio gpio = (OdroidGpio)pinStateList.get(pin).pin;
+        return gpio.getActiveType();
+    }
+
     public void setEdgeTriggerType(int pin, int edgeTriggerType) {
         OdroidGpio gpio = (OdroidGpio)pinStateList.get(pin).pin;
         gpio.setEdgeTriggerType(edgeTriggerType);
