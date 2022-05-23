@@ -18,17 +18,19 @@
 
 package com.google.android.things.odroid;
 
+import android.os.RemoteCallbackList;
+import android.os.RemoteException;
+import android.util.Log;
 import com.google.android.things.odroid.Pin;
-
-import com.google.android.things.pio.UartDevice;
 import com.google.android.things.pio.IUartDeviceCallback;
+import com.google.android.things.pio.UartDevice;
 /**
  * @hide
  */
 public class OdroidUart implements Pin {
     private static final String TAG = "OdroidUart";
     private static final UartNative mUartNative = new UartNative();
-
+    private RemoteCallbackList<IUartDeviceCallback> remoteCallback;
     private UartState state;
     private final Object mLock = new Object();
 
@@ -50,6 +52,11 @@ public class OdroidUart implements Pin {
 
     @Override
     public void close() {
+        if (remoteCallback != null) {
+            mUartNative.unregisterCallback(state.idx);
+            remoteCallback.kill();
+            remoteCallback = null;
+        }
         mUartNative.close(state.idx);
         state = null;
     }
@@ -92,12 +99,37 @@ public class OdroidUart implements Pin {
 
     public void registerCallback(IUartDeviceCallback callback) {
         synchronized(mLock) {
+            remoteCallback = new RemoteCallbackList<IUartDeviceCallback>();
+            remoteCallback.register(callback);
+            mUartNative.registerCallback(state.idx);
         }
     }
 
     public void unregisterCallback(IUartDeviceCallback callback) {
+        synchronized(mLock) {
+            mUartNative.unregisterCallback(state.idx);
+            remoteCallback.unregister(callback);
+            remoteCallback = null;
+        }
     }
 
+    public void doCallback() {
+        synchronized(mLock) {
+            try {
+                int callbackCount = remoteCallback.beginBroadcast();
+                for (int i = 0; i < callbackCount; i++) {
+                    IUartDeviceCallback callback = remoteCallback.getBroadcastItem(i);
+                    try {
+                        callback.onUartDeviceDataAvailable();
+                    } catch (RemoteException e) {
+                        Log.d(TAG, "Uart callback is not exit");
+                    }
+                }
+                remoteCallback.finishBroadcast();
+            } catch (IllegalStateException e) {
+            }
+        }
+    }
 
     private static class UartNative {
         public void open(int idx) {
@@ -133,6 +165,12 @@ public class OdroidUart implements Pin {
         public int write(int idx, byte[] buffer, int length) {
             return _write(idx, buffer, length);
         }
+        public void registerCallback(int idx) {
+            _registerCallback(idx);
+        }
+        public void unregisterCallback(int idx) {
+            _unregisterCallback(idx);
+        }
     }
 
     private static native void _open(int idx);
@@ -146,4 +184,6 @@ public class OdroidUart implements Pin {
     private static native boolean _setStopBits(int idx, int bits);
     private static native byte[] _read(int idx, int length);
     private static native int _write(int idx, byte[] buffer, int length);
+    private static native void _registerCallback(int idx);
+    private static native void _unregisterCallback(int idx);
 }

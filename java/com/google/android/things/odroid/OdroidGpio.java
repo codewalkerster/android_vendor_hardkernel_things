@@ -18,16 +18,13 @@
 
 package com.google.android.things.odroid;
 
-import com.google.android.things.odroid.Pin;
-
-import com.google.android.things.pio.Gpio;
-import com.google.android.things.pio.IGpioCallback;
-import com.google.android.things.pio.CallbackWrapper;
-
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
-
 import android.util.Log;
+import com.google.android.things.odroid.Pin;
+import com.google.android.things.pio.CallbackWrapper;
+import com.google.android.things.pio.Gpio;
+import com.google.android.things.pio.IGpioCallback;
 /**
  * @hide
  */
@@ -60,6 +57,8 @@ public class OdroidGpio implements Pin {
     public void close() {
         if (remoteCallback != null) {
             mGpioNative.unregisterCallback(gpioState.pin);
+            remoteCallback.kill();
+            remoteCallback = null;
         }
     }
 
