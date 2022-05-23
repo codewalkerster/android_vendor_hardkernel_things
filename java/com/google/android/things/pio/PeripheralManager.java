@@ -19,7 +19,6 @@
 package com.google.android.things.pio;
 
 import com.google.android.things.pio.Gpio;
-import com.google.android.things.pio.GpioCallback;
 import com.google.android.things.pio.I2cDevice;
 import com.google.android.things.pio.Pwm;
 import com.google.android.things.pio.SpiDevice;
@@ -32,7 +31,6 @@ import android.util.Log;
 
 import android.os.ServiceManager;
 import android.os.RemoteException;
-import android.os.IBinder;
 import android.os.Binder;
 
 import com.google.android.things.pio.IThingsManager;

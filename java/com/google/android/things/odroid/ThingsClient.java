@@ -18,12 +18,11 @@
 
 package com.google.android.things.odroid;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
-
 import android.os.IBinder;
 import android.util.Log;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @hide
@@ -53,7 +52,7 @@ public class ThingsClient {
         public void binderDied() {
             mListenr.unlinkToDeath(this, 0);
             clientManager.releaseClient(mClientId);
-            Log.d(TAG, "death things manager clientId- " + mClientId);
+            Log.d(TAG, "death things manager clientId - " + mClientId);
         }
     }
 
@@ -117,15 +116,16 @@ public class ThingsClient {
     }
 
     public void release() {
-        Iterator pinIterator = occupiedPin.iterator();
+        Log.d(TAG, "release");
+        Iterator<Integer> pinIterator = occupiedPin.iterator();
         while (pinIterator.hasNext())
-            manager.closePinBy((Integer)pinIterator.next());
+            manager.closePinBy(pinIterator.next());
         occupiedPin.clear();
         occupiedPin = null;
 
-        Iterator i2cIterator = usedI2c.iterator();
+        Iterator<Integer> i2cIterator = usedI2c.iterator();
         while (i2cIterator.hasNext())
-            manager.closeI2cBy((Integer)i2cIterator.next());
+            manager.closeI2cBy(i2cIterator.next());
         usedI2c.clear();
         usedI2c = null;
 

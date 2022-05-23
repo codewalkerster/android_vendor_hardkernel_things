@@ -28,6 +28,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
 
+import java.io.Closeable;
 import java.lang.AutoCloseable;
 import java.io.IOException;
 import android.util.Log;
@@ -258,21 +259,15 @@ public class UartImpl implements UartDevice, AutoCloseable {
         if (callback == null)
             throw new IOException("callback is null");
 
-        throw new IOException("Uart Callback feature is not implemented");
-
-        /*
         ((UartCallbackWrapper)mWrapperCallback).callback = callback;
         ((UartCallbackWrapper)mWrapperCallback).setHandler(checkHandler(handler));
         try {
             mThingsManager.registerUartDeviceCallback(idx, mWrapperCallback);
         } catch (RemoteException e) {
         }
-        */
     }
 
     public void unregisterUartDeviceCallback(UartDeviceCallback callback) {
-        // Uart Callback feature is not implemented
-        /*
         if (((UartCallbackWrapper)mWrapperCallback).callback == callback) {
             try {
                 mThingsManager.unregisterUartDeviceCallback(idx, mWrapperCallback);
@@ -282,6 +277,5 @@ public class UartImpl implements UartDevice, AutoCloseable {
                 Log.d(TAG, "Remote Exception");
             }
         }
-        */
     }
 }

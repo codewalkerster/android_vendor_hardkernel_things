@@ -24,7 +24,6 @@ import com.google.android.things.pio.IThingsManager;
 import com.google.android.things.pio.IGpioCallback;
 import com.google.android.things.pio.CallbackWrapper;
 
-
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;

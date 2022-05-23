@@ -472,6 +472,11 @@ public class OdroidThingsManager extends IThingsManager.Stub {
            uart.unregisterCallback(callback);
     }
 
+    public static void doUartCallback(int idx) {
+        OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
+        uart.doCallback();
+    }
+
     public List<String> getSpiList() {
         return getFilteredListOf(PinMode.SPI);
     }

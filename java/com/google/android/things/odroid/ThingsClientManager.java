@@ -18,17 +18,18 @@
 
 package com.google.android.things.odroid;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collection;
-
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @hide
  */
 public class ThingsClientManager {
+    private static final String TAG = "ThingsClientManager";
     private Map<Integer, ThingsClient> clientList;
     private OdroidThingsManager manager;
 
@@ -51,6 +52,7 @@ public class ThingsClientManager {
     }
 
     public void releaseClient(int id) {
+        Log.e(TAG, "releaseClient - " + id);
         ThingsClient client = clientList.get(id);
         client.release();
         clientList.remove(id);
