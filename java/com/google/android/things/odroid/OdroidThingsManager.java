@@ -540,14 +540,14 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         return spi.read(length);
     }
 
-    public boolean writeSpi(int idx, byte[] data, int length) {
+    public boolean writeSpi(int idx, byte[] buffer, int length) {
         OdroidSpi spi = (OdroidSpi)spiStateList.get(idx).pin;
-        return spi.write(data, length);
+        return spi.write(buffer, length);
     }
 
-    public byte[] transferSpi(int idx, byte[] data, int length) {
+    public byte[] transferSpi(int idx, byte[] buffer, int length) {
         OdroidSpi spi = (OdroidSpi)spiStateList.get(idx).pin;
-        return spi.transfer(data, length);
+        return spi.transfer(buffer, length);
     }
 
     private native void _init();

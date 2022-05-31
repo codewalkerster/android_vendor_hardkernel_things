@@ -110,6 +110,6 @@ interface IThingsManager {
     boolean setMode(int idx, int mode);
 
     byte[] readSpi(int idx, int length);
-    boolean writeSpi(int idx, in byte[] data, int length);
-    byte[] transferSpi(int idx, in byte[] data, int length);
+    boolean writeSpi(int idx, in byte[] buffer, int length);
+    byte[] transferSpi(int idx, in byte[] buffer, int length);
 }
