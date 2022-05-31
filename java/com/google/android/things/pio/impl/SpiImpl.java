@@ -169,26 +169,27 @@ public class SpiImpl implements SpiDevice, AutoCloseable {
 
     public void transfer (byte[] txBuffer, byte[] rxBuffer, int length)
             throws IllegalArgumentException, IOException {
+
         if (txBuffer.length < length || rxBuffer.length < length)
             throw new IllegalArgumentException("length is bigger than buffers size");
 
         try {
-            byte[] result = mThingsManager.transferSpi(idx,txBuffer, length);
-            for (int i = 0; i < length; i++)
+            byte[] result = mThingsManager.transferSpi(idx, txBuffer, length);
+            for (int i = 0; i < result.length; i++)
                 rxBuffer[i] = result[i];
         } catch (RemoteException e) {
             Log.d(TAG, "Spi transfer is not implemented");
         }
     }
 
-    public void write(byte[] buffer, int length)
+    public void write(byte[] txBuffer, int length)
             throws IllegalArgumentException, IOException {
         boolean result = false;
-        if (buffer.length < length)
+        if (txBuffer.length < length)
             throw new IllegalArgumentException("length is bigger than buffer size");
 
         try {
-            result = mThingsManager.writeSpi(idx, buffer, length);
+            result = mThingsManager.writeSpi(idx, txBuffer, length);
         } catch (RemoteException e) {
             Log.d(TAG, "Spi write is not implemented");
         }
@@ -197,15 +198,15 @@ public class SpiImpl implements SpiDevice, AutoCloseable {
             throw new IOException("write is failed (Invalid speed or etc problem)");
     }
 
-    public void read (byte[] buffer, int length)
-            throws IllegalArgumentException, IOException {
-        if (buffer.length < length)
+    public void read (byte[] rxBuffer, int length)
+            throws IOException, IllegalArgumentException {
+        if (rxBuffer.length < length)
             throw new IllegalArgumentException("length is bigger than buffer size");
 
         try {
             byte[] result = mThingsManager.readSpi(idx, length);
-            for (int i = 0; i < length; i++)
-                buffer[i] = result[i];
+            for (int i = 0; i < result.length; i++)
+                rxBuffer[i] = result[i];
         } catch (RemoteException e) {
             Log.d(TAG, "Spi read is not implemented");
         }
