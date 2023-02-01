@@ -45,6 +45,7 @@ public class OdroidGpio implements Pin {
 
     public OdroidGpio(int pin) {
         gpioState = new GpioState(pin);
+        mGpioNative.open(gpioState.pin);
         setActiveType(Gpio.ACTIVE_HIGH);
     }
 
@@ -60,6 +61,8 @@ public class OdroidGpio implements Pin {
             remoteCallback.kill();
             remoteCallback = null;
         }
+        mGpioNative.close(gpioState.pin);
+        gpioState = null;
     }
 
     public void setDirection(int direction) {
@@ -129,6 +132,14 @@ public class OdroidGpio implements Pin {
     }
 
     private static class GpioNative {
+        public void open(int pin) {
+            _open(pin);
+        }
+
+        public void close(int pin) {
+            _close(pin);
+        }
+
         public void setDirection(int pin, int direction) {
             _setGpioDirection(pin, direction);
         }
@@ -158,6 +169,8 @@ public class OdroidGpio implements Pin {
         }
     }
 
+    private static native void _open(int pin);
+    private static native void _close(int pin);
     private static native void _setGpioDirection(int pin, int direction);
     private static native void _setGpioValue(int pin, boolean value);
     private static native boolean _getGpioValue(int pin);
