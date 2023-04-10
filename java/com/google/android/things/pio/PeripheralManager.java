@@ -130,13 +130,17 @@ public final class PeripheralManager {
 
     public Gpio openGpio(String name) throws IOException {
         Gpio gpio = null;
+        int pin = -1;
         try {
-            int pin = mThingsManager.getGpioPinBy(name);
-            if (pin != -1)
+            pin = mThingsManager.getGpioPinBy(name);
+            if (pin >= 0)
                 gpio = new GpioImpl(name, pin, mThingsManager, thingsId);
         } catch (RemoteException e) {
             Log.d(TAG, "Remote Exception!!");
         }
+
+        if (pin == -2)
+            throw new IOException("gpio(" + name + ") is not in list");
         if (gpio == null)
             throw new IOException("gpio(" + name +") is not opened");
 
@@ -145,14 +149,18 @@ public final class PeripheralManager {
 
     public Pwm openPwm(String name) throws IOException {
         Pwm pwm = null;
+        int pin = -1;
         try {
-            int pin = mThingsManager.getPwmPinBy(name);
-            if (pin != -1)
+            pin = mThingsManager.getPwmPinBy(name);
+            if (pin >= 0)
                 pwm = new PwmImpl(name, pin, mThingsManager, thingsId);
         } catch (RemoteException e) {
             Log.d(TAG, "openPwm is not implemented");
             return null;
         }
+
+        if (pin == -2)
+            throw new IOException("pwm(" + name + ") is not in list");
         if (pwm == null)
             throw new IOException("pwm(" + name +") is not opened");
         return pwm;
@@ -160,13 +168,18 @@ public final class PeripheralManager {
 
     public I2cDevice openI2cDevice(String name, int address) throws IOException {
         I2cDevice i2c = null;
+        int idx = -1;
         try {
-            int idx = mThingsManager.getI2cIdxBy(name, address);
-            i2c = new I2cImpl(name, idx, mThingsManager, thingsId);
+            idx = mThingsManager.getI2cIdxBy(name, address);
+            if (idx >= 0)
+                i2c = new I2cImpl(name, idx, mThingsManager, thingsId);
         } catch (RemoteException e) {
             Log.d(TAG, "openI2cDevice is not implemented");
             return null;
         }
+
+        if (idx == -2)
+            throw new IOException("I2cDevice(" + name + ") is not in list");
         if (i2c == null)
             throw new IOException("I2cDevice(" + name +"-" + address + ") is not opened");
         return i2c;

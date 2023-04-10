@@ -184,7 +184,11 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         Pin initPinBy(int idx);
     }
 
-    private int getPinNumBy(String name, InitCallback callback) {
+    private int getPinNumBy(int mode, String name, InitCallback callback) {
+        List<String> filteredList = getFilteredListOf(mode);
+        if (!filteredList.contains(name))
+            return -2;
+
         for (PinState pin:pinStateList) {
             if (pin.name.equals(name)) {
                 if (pin.pin == null) {
@@ -213,7 +217,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
     }
 
     public int getGpioPinBy(String name) {
-        return getPinNumBy(name, new InitCallback() {
+        return getPinNumBy(PinMode.GPIO, name, new InitCallback() {
             @Override
             public Pin initPinBy(int idx) {
                 return new OdroidGpio(idx);
@@ -279,7 +283,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
     }
 
     public int getPwmPinBy(String name) {
-        return getPinNumBy(name, new InitCallback() {
+        return getPinNumBy(PinMode.PWM, name, new InitCallback() {
             @Override
             public Pin initPinBy(int idx) {
                 return new OdroidPwm(idx);
@@ -316,6 +320,9 @@ public class OdroidThingsManager extends IThingsManager.Stub {
         state.name = name;
         state.address = address;
         int listIdx = i2cList.indexOf(name);
+        if (listIdx == -1)
+            return -2;
+
         int idx = i2cIdx++;
         state.pin = new OdroidI2c(name, listIdx, address, idx);
 
