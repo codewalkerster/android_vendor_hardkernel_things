@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
+import android.annotation.SystemApi;
 import android.util.Log;
 import android.os.IBinder;
 
@@ -272,6 +273,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
             gpio.unregisterCallback(callback);
     }
 
+    @SystemApi
     public static void doCallback(int pin) {
         OdroidGpio gpio = (OdroidGpio)pinStateList.get(pin).pin;
         gpio.doCallback();
@@ -479,6 +481,7 @@ public class OdroidThingsManager extends IThingsManager.Stub {
            uart.unregisterCallback(callback);
     }
 
+    @SystemApi
     public static void doUartCallback(int idx) {
         OdroidUart uart = (OdroidUart)uartStateList.get(idx).pin;
         uart.doCallback();
